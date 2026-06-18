@@ -1,0 +1,90 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+*.log
+*.err
+
+# Virtual Environment
+venv/
+env/
+.venv/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build
+dist/
+build/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Test files (temporary)
+test_*.py
+*_test.py
+batch_test*.py
+check_*.py
+diagnose*.py
+analyze_*.py
+fix_*.py
+final_*.py
+interactive_*.py
+force_*.py
+correct_*.py
+run_*.py
+verify_*.py
+
+# Temporary/Debug files
+*.bat
+*.json (except package.json, tsconfig.json)
+analysis_*.json
+api_response.json
+interp_sample.json
+analysis_full.json
+error_output.txt
+py_output.txt
+frontend.log
+frontend_err.log
+backend.log
+backend.err
+
+# Documentation (keep only README.md)
+*.md
+!README.md
+
+# Memory files (local only)
+memory/
+*.state.json
+
+# Coverage
+.coverage
+htmlcov/
+.pytest_cache/
