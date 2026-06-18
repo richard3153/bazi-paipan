@@ -33,9 +33,17 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# Build
-dist/
+# Build (keep dist for production, exclude by default)
 build/
+
+# OpenClaw system config
+.openclaw/
+
+# Reference/research directories (local only)
+test_results/
+true-solar-time/
+geo_location_module/
+knowledge_base/
 
 # Environment
 .env
