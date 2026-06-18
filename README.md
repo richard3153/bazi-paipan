@@ -9,53 +9,86 @@
 
 ### 📖 Introduction
 
-A full-stack web application for Chinese Bazi (八字, Four Pillars of Destiny) calculation and fortune analysis. This system provides accurate calculation of:
-- Four Pillars (年柱, 月柱, 日柱, 时柱)
-- Ten Gods (十神) analysis
-- Shen Sha (神煞) - Deity/Spirit analysis
-- Dayun (大运) - Fortune cycles
-- Pattern analysis (格局)
-- Fortune element analysis (用神/忌神)
-- Climate adjustment analysis (调候)
-- Human-readable interpretation reports
+A professional full-stack web application for Chinese Bazi (八字, Four Pillars of Destiny) calculation and fortune analysis. This system provides accurate calculation based on traditional Chinese almanac algorithms and integrates interpretations from five classical texts.
 
-### ✨ Features
+### ✨ Core Features
 
-- **Accurate Calculation**: Based on traditional Chinese almanac algorithms
-- **Modern Tech Stack**: FastAPI + React + TypeScript
-- **City Database**: 50+ Chinese cities with coordinates
-- **True Solar Time**: Automatic adjustment for accurate pillar calculation
-- **Comprehensive Analysis**: 5 classical texts integration (《滴天髓》《子平真诠》《三命通会》《穷通宝鉴》《渊海子平》)
-- **Bilingual Reports**: Analysis reports in plain Chinese (easy to understand)
+| Feature | Description |
+|---------|-------------|
+| **Four Pillars Calculation** | Accurate 年柱/月柱/日柱/时柱 based on solar terms |
+| **Hidden Stems (藏干)** | Complete with weight analysis (本气/中气/余气) |
+| **Ten Gods (十神)** | Complete mapping with 枭神夺食 detection |
+| **Shen Sha (神煞)** | 20+ deity/spirit calculations with position tracking |
+| **Twelve Life Stages (十二长生)** | 长生/沐浴/冠带/临官/帝旺/衰/病/死/墓/绝/胎/养 |
+| **Dayun (大运)** | Fortune cycles with起运/交运 timing |
+| **Pattern Analysis (格局)** | 8 正格 + 建禄/月刃格 |
+| **YongShen/JiShen (用神/忌神)** | Useful/harmful elements analysis |
+| **TiaoHou (调候)** | Climate adjustment based on 《穷通宝鉴》 120 rules |
+| **Human-readable Reports** | Plain Chinese interpretation (no classical jargon) |
 
-### 🏗️ Architecture
+### 🏗️ Project Structure
 
 ```
-bazi-calculator/
-├── backend/               # Python FastAPI backend
+bazi-paipan/
+├── backend/                    # Python FastAPI backend
 │   ├── app/
-│   │   ├── core/        # Core calculation engines
-│   │   ├── models/      # Database models
-│   │   ├── routers/     # API routes
-│   │   ├── schemas/     # Pydantic schemas
-│   │   └── services/    # Business logic
-│   └── data/            # Database and city data
-└── baZiApp/             # React frontend
-    ├── src/
-    │   ├── components/  # React components
-    │   ├── pages/       # Page components
-    │   ├── services/    # API services
-    │   └── store/       # State management
-    └── public/
+│   │   ├── core/              # Interpretation engines
+│   │   │   ├── constants.py         # Heavenly/Earthly stems, 十神, 神煞 tables
+│   │   │   ├── interpretation_engine_v2.py  # Five classics interpretation
+│   │   │   ├── dayun_interpreter.py        # 大运解读
+│   │   │   ├── liunian_interpreter.py      # 流年解读
+│   │   │   └── shensha_interpreter.py      # 神煞解读
+│   │   ├── models/            # SQLAlchemy models
+│   │   ├── routers/           # FastAPI routes
+│   │   │   └── bazi.py              # Main calculation endpoint
+│   │   ├── schemas/           # Pydantic request/response models
+│   │   └── services/          # Business logic
+│   │       └── bazi_calc.py         # Core calculation engine (2000+ lines)
+│   ├── data/
+│   │   └── cities.csv         # 50+ Chinese cities with coordinates
+│   └── docs/                  # API & database documentation
+├── baZiApp/                   # React + TypeScript frontend
+│   ├── src/
+│   │   ├── components/        # UI components
+│   │   │   ├── SiZhuDisplay.tsx     # 四柱展示
+│   │   │   ├── WuXingDistribution.tsx  # 五行分布图
+│   │   │   └── AnalysisReport.tsx   # 分析报告
+│   │   ├── pages/
+│   │   │   └── ResultPage.tsx       # 结果页面
+│   │   ├── services/
+│   │   │   └── baziService.ts       # API integration
+│   │   └── store/
+│   │       └── appStore.ts          # Zustand state management
+│   └── package.json
+├── knowledge_base/            # JSON knowledge graphs (命理知识图谱)
+│   ├── shensha_knowledge.json       # 神煞知识
+│   ├── wuxing_knowledge.json        # 五行知识
+│   ├── yongshen_knowledge.json      # 用神知识
+│   └── tiaohou_knowledge.json       # 调候知识
+├── true-solar-time/           # True solar time calculation module
+└── geo_location_module/       # Geographic location utilities
 ```
 
 ### 🚀 Quick Start
+
+#### Prerequisites
+
+- Python 3.10+
+- Node.js 18+
+- npm or yarn
 
 #### Backend Setup
 
 ```bash
 cd backend
+
+# Install dependencies
 pip install -r requirements.txt
+
+# Initialize database (optional, for city search)
+python data/init_db.py
+
+# Start server
 uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
@@ -63,31 +96,98 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
 ```bash
 cd baZiApp
+
+# Install dependencies
 npm install
+
+# Start development server
 npm run dev
 ```
 
 #### Access
 
-- Frontend: http://localhost:3000
-- Backend API docs: http://localhost:8000/docs
+- **Frontend**: http://localhost:3000 (or next available port)
+- **Backend API**: http://localhost:8000
+- **API Docs (Swagger)**: http://localhost:8000/docs
 
-### 📚 API Documentation
+### 📚 API Reference
 
-Once the backend is running, visit http://localhost:8000/docs for interactive API documentation (Swagger UI).
+#### Calculate Bazi
 
-### 🧪 Test Cases
+```http
+POST /api/bazi/calculate
+Content-Type: application/json
 
-The system has been verified with 1000+ celebrity birth data cases, achieving 95%+ accuracy.
+{
+  "birth_info": {
+    "birth_date": "1988-02-22",
+    "birth_time": "21:20",
+    "gender": "male",
+    "latitude": 39.904,
+    "longitude": 116.407
+  }
+}
+```
 
-### 📖 Classical Texts References
+#### Response Fields
 
-This system integrates algorithms from five classical Chinese fortune-telling texts:
-1. 《滴天髓》- Di Tian Sui
-2. 《子平真诠》- Zi Ping Zhen Quan
-3. 《三命通会》- San Ming Tong Hui
-4. 《穷通宝鉴》- Qiong Tong Bao Jian
-5. 《渊海子平》- Yuan Hai Zi Ping
+| Field | Description |
+|-------|-------------|
+| `four_pillars` | 年柱/月柱/日柱/时柱 with 天干/地支/藏干 |
+| `shishen` | Ten Gods mapping for each pillar |
+| `shensha` | Shen Sha list with positions |
+| `twelve_life_stages` | 十二长生 for each earthly branch |
+| `dayun` | 大运 cycles with timing |
+| `geju` | Pattern (格局) determination |
+| `yongshen/jishen` | Useful/harmful elements |
+| `tiaohou` | Climate adjustment (调候用神) |
+| `analysis_report` | Human-readable interpretation (10 sections) |
+
+#### City Search
+
+```http
+GET /api/geo/search?name=北京
+```
+
+### 🧪 Verification
+
+Verified against china95.net reference calculations with 1988-02-22 21:20 乾造 test case:
+
+| Item | Result |
+|------|--------|
+| Four Pillars | ✅ 戊辰 甲寅 丁未 辛亥 |
+| Hidden Stems | ✅ 乙己丁 / 甲丙戊 / 乙己丁 / 壬甲 |
+| Shen Sha Positions | ✅ 8/8 match |
+| Dayun Direction | ✅ 顺行 (阳男) |
+| Starting Age | ✅ 4岁起运 |
+| Tongyun | ✅ 1岁甲寅 |
+
+### 📖 Classical Texts Integration
+
+This system implements algorithms from five classical Chinese fortune-telling texts:
+
+| Text | Application |
+|------|-------------|
+| 《滴天髓》 | Ten Gods strength analysis, pattern determination |
+| 《子平真诠》| 格局 classification, 用神 selection |
+| 《三命通会》| 神煞 calculation, 十二长生 (火土同论) |
+| 《穷通宝鉴》| 调候用神 (120 rules) |
+| 《渊海子平》| 纳音, 神煞 supplementary |
+
+### 🛠️ Tech Stack
+
+**Backend:**
+- FastAPI 0.104+
+- SQLAlchemy 2.0
+- Pydantic 2.0
+- SQLite (city database)
+
+**Frontend:**
+- React 18
+- TypeScript 5
+- Vite 5
+- Zustand (state management)
+- Ant Design (UI components)
 
 ---
 
@@ -96,53 +196,83 @@ This system integrates algorithms from five classical Chinese fortune-telling te
 
 ### 📖 项目简介
 
-一个全栈的八字排盘与命理分析Web应用。本系统提供精准的八字计算，包括：
-- 四柱（年柱、月柱、日柱、时柱）排盘
-- 十神分析
-- 神煞分析
-- 大运/流年分析
-- 格局判定
-- 用神/忌神分析
-- 调候用神分析
-- 通俗易懂的命理解读报告
+一个专业的全栈八字排盘与命理分析Web应用。本系统基于传统历法算法，实现精准的四柱八字计算，并融合五本命理经典的解读体系。
 
-### ✨ 主要功能
+### ✨ 核心功能
 
-- **精准排盘**：基于传统历法算法，精确计算四柱八字
-- **现代化技术栈**：FastAPI + React + TypeScript
-- **城市数据库**：内置50+中国城市经纬度和时区数据
-- **真太阳时校正**：自动校正真太阳时，确保排盘准确性
-- **全面分析**：融合五本命理经典（《滴天髓》《子平真诠》《三命通会》《穷通宝鉴》《渊海子平》）
-- **白话文解读**：生成通俗易懂的命理解读报告
+| 功能 | 说明 |
+|------|------|
+| **四柱排盘** | 基于节气精准计算年柱/月柱/日柱/时柱 |
+| **藏干分析** | 含本气/中气/余气权重分析 |
+| **十神映射** | 完整十神关系，含枭神夺食检测 |
+| **神煞推算** | 20+种神煞，标注归属位置 |
+| **十二长生** | 长生/沐浴/冠带/临官/帝旺/衰/病/死/墓/绝/胎/养 |
+| **大运计算** | 起运年龄、交运年份、顺逆方向 |
+| **格局判定** | 8正格 + 建禄/月刃格 |
+| **用神/忌神** | 喜用神与忌神分析 |
+| **调候用神** | 基于《穷通宝鉴》120条调候规则 |
+| **白话解读** | 通俗易懂的命理解读报告（无文言文） |
 
-### 🏗️ 系统架构
+### 🏗️ 项目结构
 
 ```
-bazi-calculator/
-├── backend/               # Python FastAPI 后端
+bazi-paipan/
+├── backend/                    # Python FastAPI 后端
 │   ├── app/
-│   │   ├── core/        # 核心计算引擎
-│   │   ├── models/      # 数据库模型
-│   │   ├── routers/     # API路由
-│   │   ├── schemas/     # Pydantic数据模型
-│   │   └── services/    # 业务逻辑
-│   └── data/            # 数据库和城市数据
-└── baZiApp/             # React 前端
-    ├── src/
-    │   ├── components/  # React组件
-    │   ├── pages/       # 页面组件
-    │   ├── services/    # API服务
-    │   └── store/       # 状态管理
-    └── public/
+│   │   ├── core/              # 解读引擎
+│   │   │   ├── constants.py         # 天干地支、十神、神煞常量表
+│   │   │   ├── interpretation_engine_v2.py  # 五书深度解读
+│   │   │   └── *_interpreter.py     # 大运/流年/神煞解读
+│   │   ├── models/            # SQLAlchemy 数据模型
+│   │   ├── routers/           # FastAPI 路由
+│   │   │   └── bazi.py              # 主排盘接口
+│   │   ├── schemas/           # Pydantic 请求/响应模型
+│   │   └── services/          # 业务逻辑
+│   │       └── bazi_calc.py         # 核心排盘引擎 (2000+ 行)
+│   ├── data/
+│   │   └── cities.csv         # 50+ 中国城市经纬度数据
+│   └── docs/                  # API 与数据库文档
+├── baZiApp/                   # React + TypeScript 前端
+│   ├── src/
+│   │   ├── components/        # UI 组件
+│   │   │   ├── SiZhuDisplay.tsx     # 四柱展示
+│   │   │   ├── WuXingDistribution.tsx  # 五行分布图
+│   │   │   └── AnalysisReport.tsx   # 分析报告
+│   │   ├── pages/
+│   │   │   └── ResultPage.tsx       # 结果页面
+│   │   ├── services/
+│   │   │   └── baziService.ts       # API 集成
+│   │   └── store/
+│   │       └── appStore.ts          # Zustand 状态管理
+├── knowledge_base/            # 命理知识图谱 (JSON)
+│   ├── shensha_knowledge.json       # 神煞知识
+│   ├── wuxing_knowledge.json        # 五行知识
+│   ├── yongshen_knowledge.json      # 用神知识
+│   └── tiaohou_knowledge.json       # 调候知识
+├── true-solar-time/           # 真太阳时计算模块
+└── geo_location_module/       # 地理位置工具
 ```
 
 ### 🚀 快速开始
+
+#### 环境要求
+
+- Python 3.10+
+- Node.js 18+
+- npm 或 yarn
 
 #### 后端启动
 
 ```bash
 cd backend
+
+# 安装依赖
 pip install -r requirements.txt
+
+# 初始化数据库（可选，用于城市搜索）
+python data/init_db.py
+
+# 启动服务
 uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
@@ -150,31 +280,98 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
 ```bash
 cd baZiApp
+
+# 安装依赖
 npm install
+
+# 启动开发服务器
 npm run dev
 ```
 
 #### 访问地址
 
-- 前端：http://localhost:3000
-- 后端API文档：http://localhost:8000/docs
+- **前端**: http://localhost:3000 (或下一个可用端口)
+- **后端 API**: http://localhost:8000
+- **API 文档 (Swagger)**: http://localhost:8000/docs
 
-### 📚 API接口文档
+### 📚 API 接口
 
-后端启动后，访问 http://localhost:8000/docs 查看交互式API文档（Swagger UI）。
+#### 排盘计算
 
-### 🧪 测试验证
+```http
+POST /api/bazi/calculate
+Content-Type: application/json
 
-本系统已通过1000+名人出生数据案例验证，准确率达95%以上。
+{
+  "birth_info": {
+    "birth_date": "1988-02-22",
+    "birth_time": "21:20",
+    "gender": "male",
+    "latitude": 39.904,
+    "longitude": 116.407
+  }
+}
+```
 
-### 📖 参考经典
+#### 返回字段
 
-本系统融合了五本中国命理经典算法的实现：
-1. 《滴天髓》
-2. 《子平真诠》
-3. 《三命通会》
-4. 《穷通宝鉴》
-5. 《渊海子平》
+| 字段 | 说明 |
+|------|------|
+| `four_pillars` | 年柱/月柱/日柱/时柱 含天干/地支/藏干 |
+| `shishen` | 四柱十神映射 |
+| `shensha` | 神煞列表及归属位置 |
+| `twelve_life_stages` | 四支十二长生 |
+| `dayun` | 大运周期及时间 |
+| `geju` | 格局判定 |
+| `yongshen/jishen` | 用神/忌神 |
+| `tiaohou` | 调候用神 |
+| `analysis_report` | 白话文解读报告 (10个板块) |
+
+#### 城市搜索
+
+```http
+GET /api/geo/search?name=北京
+```
+
+### 🧪 验证结果
+
+以 1988-02-22 21:20 乾造为验收标准，对比 china95.net 参考排盘：
+
+| 项目 | 结果 |
+|------|------|
+| 四柱 | ✅ 戊辰 甲寅 丁未 辛亥 |
+| 藏干 | ✅ 乙己丁 / 甲丙戊 / 乙己丁 / 壬甲 |
+| 神煞位置 | ✅ 8/8 全部匹配 |
+| 大运方向 | ✅ 顺行 (阳男) |
+| 起运年龄 | ✅ 4岁起运 |
+| 童运 | ✅ 1岁甲寅 |
+
+### 📖 经典参考
+
+本系统融合五本命理经典的算法实现：
+
+| 经典 | 应用 |
+|------|------|
+| 《滴天髓》 | 十神强弱分析、格局判定 |
+| 《子平真诠》| 格局分类、用神选取 |
+| 《三命通会》| 神煞推算、十二长生 (火土同论) |
+| 《穷通宝鉴》| 调候用神 (120条规则) |
+| 《渊海子平》| 纳音、神煞补充 |
+
+### 🛠️ 技术栈
+
+**后端:**
+- FastAPI 0.104+
+- SQLAlchemy 2.0
+- Pydantic 2.0
+- SQLite (城市数据库)
+
+**前端:**
+- React 18
+- TypeScript 5
+- Vite 5
+- Zustand (状态管理)
+- Ant Design (UI 组件)
 
 ### 📄 开源协议
 
@@ -184,13 +381,13 @@ MIT License
 
 ## 👨‍💻 Author / 作者
 
-**风水 (Feng Shui)** - Full-stack developer & Bazi enthusiast
+**风水 (Feng Shui)**
 
-- GitHub: [Your GitHub Username]
-- Email: [Your Email]
+- GitHub: [richard3153](https://github.com/richard3153)
+- Project: [bazi-paipan](https://github.com/richard3153/bazi-paipan)
 
 ## 🤝 Contributing / 贡献
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-欢迎贡献代码！请提交Pull Request。
+欢迎贡献代码！请提交 Pull Request。
