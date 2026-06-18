@@ -11,80 +11,17 @@ import os
 import json
 
 # ============================================================
-# Chinese city name mapping (ASCII/pinyin -> Chinese)
-# Source: manual mapping for major Chinese cities
+# Load Chinese city name mapping (pinyin/ASCII -> Chinese)
+# Generated from modood/Administrative-divisions-of-China
 # ============================================================
-CN_CITY_MAP = {
-    # Municipalities
-    "Beijing": "北京", "Shanghai": "上海", "Tianjin": "天津", "Chongqing": "重庆",
-    # Provinces - major cities
-    "Guangzhou": "广州", "Shenzhen": "深圳", "Dongguan": "东莞", "Foshan": "佛山",
-    "Zhuhai": "珠海", "Zhongshan": "中山", "Huizhou": "惠州", "Jiangmen": "江门",
-    "Zhaoqing": "肇庆", "Shantou": "汕头", "Shaoguan": "韶关", "Meizhou": "梅州",
-    "Zhanjiang": "湛江", "Maoming": "茂名", "Zhuhai": "珠海", "Shantou": "汕头",
-    "Chaozhou": "潮州", "Jieyang": "揭阳", "Yunfu": "云浮", "Heyuan": "河源",
-    "Yangjiang": "阳江", "Qingyuan": "清远", "Zhongshan": "中山", "Shanwei": "汕尾",
-    "Heyuan": "河源", "Meizhou": "梅州", "Shaoguan": "韶关", "Shantou": "汕头",
-    "Nanjing": "南京", "Suzhou": "苏州", "Wuxi": "无锡", "Changzhou": "常州",
-    "Nantong": "南通", "Xuzhou": "徐州", "Huai'an": "淮安", "Yancheng": "盐城",
-    "Yangzhou": "扬州", "Zhenjiang": "镇江", "Taizhou": "泰州", "Suqian": "宿迁",
-    "Hangzhou": "杭州", "Ningbo": "宁波", "Wenzhou": "温州", "Jiaxing": "嘉兴",
-    "Huzhou": "湖州", "Shaoxing": "绍兴", "Jinhua": "金华", "Quzhou": "衢州",
-    "Zhoushan": "舟山", "Taizhou": "台州", "Lishui": "丽水",
-    "Hefei": "合肥", "Wuhu": "芜湖", "Bengbu": "蚌埠", "Huainan": "淮南",
-    "Ma'anshan": "马鞍山", "Huaibei": "淮北", "Tongling": "铜陵", "Anqing": "安庆",
-    "Huangshan": "黄山", "Chuzhou": "滁州", "Fuyang": "阜阳", "Suzhou": "宿州",
-    "Lu'an": "六安", "Bozhou": "亳州", "Chizhou": "池州", "Xuancheng": "宣城",
-    "Fuzhou": "福州", "Xiamen": "厦门", "Quanzhou": "泉州", "Zhangzhou": "漳州",
-    "Putian": "莆田", "Sanming": "三明", "Nanping": "南平", "Longyan": "龙岩",
-    "Ningde": "宁德",
-    "Nanchang": "南昌", "Jingdezhen": "景德镇", "Pingxiang": "萍乡", "Jiujiang": "九江",
-    "Xinyu": "新余", "Yingtan": "鹰潭", "Ganzhou": "赣州", "Ji'an": "吉安",
-    "Yichun": "宜春", "Fuzhou": "抚州", "Shangrao": "上饶",
-    "Jinan": "济南", "Qingdao": "青岛", "Yantai": "烟台", "Weifang": "潍坊",
-    "Linyi": "临沂", "Jining": "济宁", "Heze": "菏泽", "Taian": "泰安",
-    "Zibo": "淄博", "Dezhou": "德州", "Dongying": "东营", "Weihai": "威海",
-    "Zaozhuang": "枣庄", "Rizhao": "日照", "Liaocheng": "聊城", "Binzhou": "滨州",
-    "Zhengzhou": "郑州", "Luoyang": "洛阳", "Nanyang": "南阳", "Kaifeng": "开封",
-    "Shangqiu": "商丘", "Xinyang": "信阳", "Zhoukou": "周口", "Xuchang": "许昌",
-    "Xinxiang": "新乡", "Jiaozuo": "焦作", "Anyang": "安阳", "Hebi": "鹤壁",
-    "Puyang": "濮阳", "Luohe": "漯河", "Sanmenxia": "三门峡", "Zhumadian": "驻马店",
-    "Wuhan": "武汉", "Xiangyang": "襄阳", "Yichang": "宜昌", "Huangshi": "黄石",
-    "Ezhou": "鄂州", "Shiyan": "十堰", "Jingmen": "荆门", "Xiaogan": "孝感",
-    "Huanggang": "黄冈", "Xianning": "咸宁", "Suizhou": "随州", "Enshi": "恩施",
-    "Changsha": "长沙", "Hengyang": "衡阳", "Zhuzhou": "株洲", "Xiangtan": "湘潭",
-    "Yueyang": "岳阳", "Changde": "常德", "Zhangjiajie": "张家界", "Yiyang": "益阳",
-    "Chenzhou": "郴州", "Yongzhou": "永州", "Huaihua": "怀化", "Loudi": "娄底",
-    "Chengdu": "成都", "Mianyang": "绵阳", "Deyang": "德阳", "Yibin": "宜宾",
-    "Nanchong": "南充", "Luzhou": "泸州", "Dazhou": "达州", "Neijiang": "内江",
-    "Sichuan": "遂宁", "Leshan": "乐山", "Nanchong": "南充", "Meishan": "眉山",
-    "Guilin": "桂林", "Nanning": "南宁", "Liuzhou": "柳州", "Guigang": "贵港",
-    "Yulin": "玉林", "Baise": "百色", "Hezhou": "贺州", "Hechi": "河池", "Chongzuo": "崇左",
-    "Haikou": "海口", "Sanya": "三亚", "Sansha": "三沙",
-    "Guiyang": "贵阳", "Zunyi": "遵义", "Anshun": "安顺", "Bijie": "毕节", "Tongren": "铜仁",
-    "Kunming": "昆明", "Qujing": "曲靖", "Yuxi": "玉溪", "Baoshan": "保山", "Zhaotong": "昭通", "Lijiang": "丽江",
-    "Xi'an": "西安", "Xianyang": "咸阳", "Baoji": "宝鸡", "Tongchuan": "铜川", "Weinan": "渭南",
-    "Yan'an": "延安", "Hanzhong": "汉中", "Yulin": "榆林", "Ankang": "安康", "Shangluo": "商洛",
-    "Lanzhou": "兰州", "Jinchang": "金昌", "Baiyin": "白银", "Tianshui": "天水",
-    "Wuwei": "武威", "Zhangye": "张掖", "Pingliang": "平凉", "Jiuquan": "酒泉", "Qingyang": "庆阳",
-    "Xining": "西宁", "Haidong": "海东", "Haibei": "海北", "Hainan": "海南", "Huangnan": "黄南",
-    "Yinchuan": "银川", "Shizuishan": "石嘴山", "Wuzhong": "吴忠", "Guyuan": "固原", "Zhongwei": "中卫",
-    "Urumqi": "乌鲁木齐", "Karamay": "克拉玛依", "Turpan": "吐鲁番", "Hami": "哈密",
-    "Shenyang": "沈阳", "Dalian": "大连", "Anshan": "鞍山", "Fushun": "抚顺",
-    "Benxi": "本溪", "Dandong": "丹东", "Jinzhou": "锦州", "Yingkou": "营口",
-    "Fuxin": "阜新", "Liaoyang": "辽阳", "Panjin": "盘锦", "Tieling": "铁岭", "Chaoyang": "朝阳", "Huludao": "葫芦岛",
-    "Changchun": "长春", "Jilin": "吉林", "Siping": "四平", "Liaoyuan": "辽源",
-    "Tonghua": "通化", "Baishan": "白山", "Songyuan": "松原", "Baicheng": "白城",
-    "Harbin": "哈尔滨", "Qiqihar": "齐齐哈尔", "Jixi": "鸡西", "Hegang": "鹤岗",
-    "Shuangyashan": "双鸭山", "Daqing": "大庆", "Yichun": "伊春", "Jiamusi": "佳木斯",
-    "Qitaihe": "七台河", "Heihe": "黑河", "Suihua": "绥化", "Mudanjiang": "牡丹江",
-    "Hohhot": "呼和浩特", "Baotou": "包头", "Wuhai": "乌海", "Chifeng": "赤峰",
-    "Tongliao": "通辽", "Ordos": "鄂尔多斯", "Hulunbuir": "呼伦贝尔",
-    "Lhasa": "拉萨", "Shigatse": "日喀则", "Chamdo": "昌都", "Nyingchi": "林芝",
-    "Shannan": "山南", "Nagqu": "那曲", "Ali": "阿里",
-    "Taipei": "台北", "Kaohsiung": "高雄", "Taichung": "台中", "Tainan": "台南",
-    "Hong Kong": "香港", "Macau": "澳门",
-}
+CN_CITY_MAP_PATH = r'C:\Users\xuanc\AppData\Local\Temp\cn_city_map.json'
+if os.path.exists(CN_CITY_MAP_PATH):
+    with open(CN_CITY_MAP_PATH, 'r', encoding='utf-8') as f:
+        CN_CITY_MAP = json.load(f)
+    print(f"Loaded Chinese city mapping: {len(CN_CITY_MAP)} cities")
+else:
+    CN_CITY_MAP = {}
+    print("Warning: Chinese city mapping not found, Chinese cities will use English/pinyin names")
 
 # Province name mapping (SimpleMaps admin_name -> Chinese)
 CN_PROVINCE_MAP = {
@@ -262,17 +199,24 @@ def get_timezone(iso2):
 
 def get_city_name(row):
     """Get city name in Chinese if possible, otherwise use ASCII name."""
-    city_ascii = row['city_ascii']
+    city_ascii = row['city_ascii'].strip()
     country = row['country']
     iso2 = row['iso2']
+    # Normalize lookup key: lowercase, remove apostrophes/hyphens/spaces
+    lookup_key = city_ascii.lower().replace("'", "").replace("-", "").replace(" ", "")
 
-    # For Chinese cities, try to map to Chinese name
+    # For Chinese cities, try to map to Chinese name using pinyin/English lookup
     if iso2 == 'CN':
-        # Try direct mapping
-        if city_ascii in CN_CITY_MAP:
-            return CN_CITY_MAP[city_ascii]
-        # Try the city field (might have Chinese)
-        city_field = row['city']
+        if lookup_key in CN_CITY_MAP:
+            return CN_CITY_MAP[lookup_key]
+        # Try stripping common administrative suffixes that SimpleMaps adds for disambiguation
+        for suffix in ('shi', 'xian', 'qu', 'zhen', 'cun', 'dao', 'si', 'zhan', 'chi', 'ta', 'pu', 'ling', 'hu', 'tou', 'xiang', 'bu', 'wan', 'cheng', 'qiao'):
+            if lookup_key.endswith(suffix) and len(lookup_key) > len(suffix) + 1:
+                stripped = lookup_key[:-len(suffix)]
+                if stripped in CN_CITY_MAP:
+                    return CN_CITY_MAP[stripped]
+        # Try the city field (might have Chinese characters)
+        city_field = row['city'].strip()
         try:
             city_field.encode('ascii')
             # ASCII only, no Chinese
@@ -314,12 +258,15 @@ def main():
         total = 0
         for row in reader:
             total += 1
+            name_en = row['city_ascii'].strip()
             name = get_city_name(row)
             country = row['country']
             province = get_province(row)
             lng = float(row['lng'])
             lat = float(row['lat'])
             tz = get_timezone(row['iso2'])
+            pop = int(float(row['population'])) if row['population'] else None
+            capital = row['capital'].strip() if row['capital'] else None
 
             # Deduplicate
             key = (name, country, province)
@@ -329,11 +276,14 @@ def main():
 
             cities.append({
                 'name': name,
+                'name_en': name_en,
                 'country': country,
                 'province': province,
                 'longitude': lng,
                 'latitude': lat,
                 'timezone': tz,
+                'population': pop,
+                'capital': capital,
             })
 
             if total % 10000 == 0:
@@ -342,12 +292,13 @@ def main():
     print(f"Total rows processed: {total}")
     print(f"Unique cities after dedup: {len(cities)}")
 
-    # Sort by country, then province, then name
-    cities.sort(key=lambda x: (x['country'], x['province'] or '', x['name']))
+    # Sort by population desc, then country, province, name
+    cities.sort(key=lambda x: (-(x['population'] or 0), x['country'], x['province'] or '', x['name']))
 
     # Write output
+    fieldnames = ['id', 'name', 'name_en', 'country', 'province', 'longitude', 'latitude', 'timezone', 'population', 'capital']
     with open(dst, 'w', newline='', encoding='utf-8') as f:
-        writer = csv.DictWriter(f, fieldnames=['id', 'name', 'country', 'province', 'longitude', 'latitude', 'timezone'])
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
         for i, c in enumerate(cities, start=1):
             c['id'] = i

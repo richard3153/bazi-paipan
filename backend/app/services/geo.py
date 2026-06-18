@@ -10,7 +10,7 @@ from typing import List, Optional
 
 def search_cities(db: Session, query: str, limit: int = 20) -> List[City]:
     """
-    模糊搜索城市
+    模糊搜索城市（支持中文名和英文名）
     
     参数:
         db: 数据库会话
@@ -23,7 +23,12 @@ def search_cities(db: Session, query: str, limit: int = 20) -> List[City]:
     pattern = f"%{query}%"
     cities = (
         db.query(City)
-        .filter(City.name.like(pattern) | City.province.like(pattern))
+        .filter(
+            City.name.like(pattern) |
+            City.name_en.like(pattern) |
+            City.province.like(pattern)
+        )
+        .order_by(City.population.desc().nullslast())
         .limit(limit)
         .all()
     )

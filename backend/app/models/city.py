@@ -11,8 +11,10 @@ class City(Base):
     __tablename__ = "cities"
 
     id = Column(Integer, primary_key=True, index=True)
-    # 城市名称
+    # 城市名称（中文）
     name = Column(String(64), nullable=False, index=True)
+    # 城市英文名称
+    name_en = Column(String(64), nullable=True, index=True)
     # 所属省份
     province = Column(String(32), nullable=True, index=True)
     # 所属城市（地级市，用于区县级查询）
@@ -27,6 +29,10 @@ class City(Base):
     adcode = Column(String(12), nullable=True)
     # 国家代码
     country = Column(String(8), nullable=True, default="CN")
+    # 人口（用于搜索排序）
+    population = Column(Integer, nullable=True)
+    # 是否首都/首府（primary=首都，admin=省会/州府）
+    capital = Column(String(8), nullable=True)
 
     def __repr__(self):
         return f"<City(name={self.name}, lng={self.longitude}, lat={self.latitude})>"

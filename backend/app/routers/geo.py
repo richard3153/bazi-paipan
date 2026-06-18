@@ -31,10 +31,14 @@ def search_city(req: GeoQueryRequest, db: Session = Depends(get_db)):
         CityInfo(
             id=c.id,
             name=c.name,
+            name_en=c.name_en,
             province=c.province,
+            country=c.country,
             longitude=c.longitude,
             latitude=c.latitude,
             timezone=c.timezone,
+            population=c.population,
+            capital=c.capital,
         )
         for c in cities
     ]

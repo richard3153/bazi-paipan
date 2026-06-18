@@ -6,11 +6,15 @@ from typing import Optional, List
 class CityInfo(BaseModel):
     """城市信息"""
     id: int
-    name: str
+    name: str = Field(..., description="城市名称（中文优先）")
+    name_en: Optional[str] = Field(None, description="城市英文名称")
     province: Optional[str] = None
+    country: Optional[str] = Field(None, description="国家")
     longitude: float
     latitude: float
     timezone: str = "Asia/Shanghai"
+    population: Optional[int] = Field(None, description="人口")
+    capital: Optional[str] = Field(None, description="首都/首府标识")
 
 
 class GeoQueryRequest(BaseModel):

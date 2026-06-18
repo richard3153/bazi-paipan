@@ -25,13 +25,18 @@ def import_cities():
             # 导入新数据
             count = 0
             for row in reader:
+                population = int(row['population']) if row.get('population') else None
+                capital = row.get('capital') if row.get('capital') else None
                 city = City(
                     name=row['name'],
+                    name_en=row.get('name_en') if row.get('name_en') else None,
                     country=row['country'],
                     province=row['province'] if row['province'] else None,
                     longitude=float(row['longitude']),
                     latitude=float(row['latitude']),
-                    timezone=row['timezone']
+                    timezone=row['timezone'],
+                    population=population,
+                    capital=capital,
                 )
                 db.add(city)
                 count += 1
