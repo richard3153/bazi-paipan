@@ -83,6 +83,10 @@ backend.err
 # Memory files (local only)
 memory/
 *.state.json
+.consolidate-state.json
+
+# Start scripts (local)
+start_frontend.ps1
 
 # Coverage
 .coverage
