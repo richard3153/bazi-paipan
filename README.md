@@ -26,6 +26,23 @@ A professional full-stack web application for Chinese Bazi (八字, Four Pillars
 | **TiaoHou (调候)** | Climate adjustment based on 《穷通宝鉴》 120 rules |
 | **Human-readable Reports** | Plain Chinese interpretation (no classical jargon) |
 
+### 📸 Screenshots
+
+#### Input Form - Province/City Cascading Selector
+![Input Form](docs/screenshots/01-input-form.png)
+
+#### Four Pillars Display (四柱排盘)
+![Four Pillars](docs/screenshots/02-sizhu-display.png)
+
+#### Fortune Cycles - Dayun & Liunian (大运流年)
+![Dayun Liunian](docs/screenshots/03-dayun-liunian.png)
+
+#### Five Elements Analysis (五行分析)
+![Five Elements](docs/screenshots/04-wuxing-analysis.png)
+
+#### Analysis Report (解读报告)
+![Analysis Report](docs/screenshots/05-analysis-report.png)
+
 ### 🏗️ Project Structure
 
 ```
@@ -212,6 +229,23 @@ This system implements algorithms from five classical Chinese fortune-telling te
 | **用神/忌神** | 喜用神与忌神分析 |
 | **调候用神** | 基于《穷通宝鉴》120条调候规则 |
 | **白话解读** | 通俗易懂的命理解读报告（无文言文） |
+
+### 📸 截图预览
+
+#### 输入表单 - 省份城市两级联动
+![输入表单](docs/screenshots/01-input-form.png)
+
+#### 四柱展示
+![四柱排盘](docs/screenshots/02-sizhu-display.png)
+
+#### 大运流年
+![大运流年](docs/screenshots/03-dayun-liunian.png)
+
+#### 五行分析
+![五行分析](docs/screenshots/04-wuxing-analysis.png)
+
+#### 解读报告
+![解读报告](docs/screenshots/05-analysis-report.png)
 
 ### 🏗️ 项目结构
 
