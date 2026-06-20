@@ -69,6 +69,34 @@ force_*.py
 correct_*.py
 run_*.py
 verify_*.py
+add_*.py
+find_*.py
+dump_*.py
+fetch_*.py
+import_*.py
+list_*.py
+merge_*.py
+read_*.py
+restore_*.py
+start_*.py
+update_*.py
+download_*.py
+reimport_*.py
+batch_*.py
+
+# CSV backups
+*.csv.bak*
+
+# Database backups
+*.bakdb*
+*.bak*
+
+# Temp data files
+cities_*.csv
+cities_*.xlsx
+
+# JSON temp files
+JSON.stringify(*)
 
 # Temporary/Debug files
 *.bat

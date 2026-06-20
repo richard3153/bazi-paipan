@@ -47,3 +47,33 @@ def get_city_by_id(db: Session, city_id: int) -> Optional[City]:
     通过ID获取城市
     """
     return db.query(City).filter(City.id == city_id).first()
+
+
+def get_provinces(db: Session) -> List[str]:
+    """
+    获取中国所有省份列表（去重、排序）
+    """
+    results = (
+        db.query(City.province)
+        .filter(City.country == 'China')
+        .filter(City.province.isnot(None))
+        .filter(City.province != '')
+        .distinct()
+        .order_by(City.province)
+        .all()
+    )
+    return [r[0] for r in results]
+
+
+def get_cities_by_province(db: Session, province: str) -> List[City]:
+    """
+    获取某省份下的所有城市
+    """
+    cities = (
+        db.query(City)
+        .filter(City.country == 'China')
+        .filter(City.province == province)
+        .order_by(City.name)
+        .all()
+    )
+    return cities

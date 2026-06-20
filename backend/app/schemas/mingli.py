@@ -17,6 +17,30 @@ class CityInfo(BaseModel):
     capital: Optional[str] = Field(None, description="首都/首府标识")
 
 
+class ProvinceInfo(BaseModel):
+    """省份信息"""
+    name: str = Field(..., description="省份名称")
+
+
+class ProvinceListResponse(BaseModel):
+    """省份列表响应"""
+    success: bool
+    data: Optional[List[ProvinceInfo]] = None
+    message: Optional[str] = None
+
+
+class CitiesByProvinceRequest(BaseModel):
+    """按省份查询城市请求"""
+    province: str = Field(..., description="省份名称")
+
+
+class CitiesByProvinceResponse(BaseModel):
+    """按省份查询城市响应"""
+    success: bool
+    data: Optional[List[CityInfo]] = None
+    message: Optional[str] = None
+
+
 class GeoQueryRequest(BaseModel):
     """地理查询请求"""
     city_name: str = Field(..., description="城市名称（支持模糊查询）")

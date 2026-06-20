@@ -1,71 +1,58 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { Form, Input, Select, DatePicker, TimePicker, Button, Row, Col, Card, Space, message, AutoComplete, Tag } from 'antd';
-import { UserOutlined, CalendarOutlined, SearchOutlined, SwapOutlined } from '@ant-design/icons';
+import React, { useState, useCallback, useEffect } from 'react';
+import { Form, Input, Select, DatePicker, TimePicker, Button, Row, Col, Card, Space, message, Tag } from 'antd';
+import { UserOutlined, CalendarOutlined, SwapOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { useAppStore } from '@/store/appStore';
-import { searchCities } from '@/services/baziService';
+import { getProvinces, getCitiesByProvince } from '@/services/baziService';
 import type { PaiPanInput } from '@/types/bazi';
 
 const InputForm: React.FC = () => {
   const { input, setInput, submitPaiPan, loading, error } = useAppStore();
   const [form] = Form.useForm();
   
-  // 城市搜索相关状态
-  const [cityOptions, setCityOptions] = useState<Array<{label: React.ReactNode, value: string, longitude: number, latitude: number}>>([]);
+  // 级联城市选择相关状态
+  const [provinces, setProvinces] = useState<string[]>([]);
+  const [cities, setCities] = useState<Array<{id: number, name: string, longitude: number, latitude: number}>>([]);
   const [cityLoading, setCityLoading] = useState(false);
-  const [searching, setSearching] = useState(false);
-  
-  // 搜索城市（防抖）
-  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [selectedProvince, setSelectedProvince] = useState<string>(input.birthPlace ? '' : '');
 
-  const handleCitySearch = useCallback(async (keyword: string) => {
-    if (searchTimerRef.current) {
-      clearTimeout(searchTimerRef.current);
-    }
-    if (!keyword || keyword.length < 1) {
-      setCityOptions([]);
-      setSearching(false);
-      return;
-    }
-    setSearching(true);
-    searchTimerRef.current = setTimeout(async () => {
+  // 加载省份列表
+  useEffect(() => {
+    getProvinces().then(provinceList => {
+      setProvinces(provinceList);
+    });
+  }, []);
+
+  // 省份选择变化
+  const handleProvinceChange = useCallback(async (province: string) => {
+    setSelectedProvince(province);
+    form.setFieldsValue({ birthPlace: undefined });
+    setInput({ birthPlace: '', longitude: undefined, latitude: undefined });
+    if (province) {
       setCityLoading(true);
       try {
-        const cities = await searchCities(keyword);
-        const options = cities.map(c => ({
-          label: (
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span>{c.name}{c.province ? ` (${c.province})` : ''}</span>
-              <Tag color="blue" style={{ marginLeft: 8, fontSize: 10 }}>{c.longitude.toFixed(2)}°E, {c.latitude.toFixed(2)}°N</Tag>
-            </div>
-          ),
-          value: c.name,
-          longitude: c.longitude,
-          latitude: c.latitude
-        }));
-        setCityOptions(options);
+        const cityList = await getCitiesByProvince(province);
+        setCities(cityList);
       } catch (err) {
-        console.error('搜索城市失败:', err);
+        console.error('加载城市失败:', err);
       } finally {
         setCityLoading(false);
-        setSearching(false);
       }
-    }, 500);
-  }, []);
+    } else {
+      setCities([]);
+    }
+  }, [form, setInput]);
 
-  useEffect(() => {
-    return () => {
-      if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
-    };
-  }, []);
-  
   // 城市选择变化
-  const handleCitySelect = (value: string, option: any) => {
-    setInput({ 
-      birthPlace: value,
-      longitude: option.longitude,
-      latitude: option.latitude
-    });
+  const handleCityChange = (cityName: string) => {
+    const city = cities.find(c => c.name === cityName);
+    if (city) {
+      setInput({
+        birthPlace: city.name,
+        longitude: city.longitude,
+        latitude: city.latitude
+      });
+    }
   };
   
   // 提交表单
@@ -106,6 +93,10 @@ const InputForm: React.FC = () => {
     
     if (changedValues.birthPlace !== undefined) {
       updates.birthPlace = changedValues.birthPlace;
+    }
+    
+    if (changedValues.province !== undefined) {
+      // province handled by handleProvinceChange, no need to update input
     }
     
     // 始终使用全排模式
@@ -204,28 +195,46 @@ const InputForm: React.FC = () => {
         </Row>
         
         <Row gutter={16}>
-          <Col span={24}>
+          <Col span={8}>
             <Form.Item
-              label="出生地点"
-              name="birthPlace"
-              rules={[{ required: true, message: '请搜索并选择出生城市' }]}
-              extra={input.longitude && input.latitude ? `已选择：${input.longitude.toFixed(4)}°E, ${input.latitude.toFixed(4)}°N` : '搜索城市后将自动获取经纬度'}
+              label="省份"
+              name="province"
             >
-              <AutoComplete
-                value={input.birthPlace || ''}
-                options={cityOptions}
-                onSearch={handleCitySearch}
-                onSelect={handleCitySelect}
-                onChange={(value) => setInput({ birthPlace: value })}
-                placeholder="输入城市名称搜索..."
-                style={{ width: '100%' }}
-                notFoundContent={cityLoading ? '搜索中...' : (searching ? '输入更多字符搜索...' : '未找到匹配城市')}
-              >
-                <Input
-                  prefix={<SearchOutlined />}
-                  suffix={cityLoading && <span style={{ color: '#1890ff' }}>搜索中</span>}
-                />
-              </AutoComplete>
+              <Select
+                placeholder="请选择省份"
+                showSearch
+                optionFilterProp="label"
+                value={selectedProvince || undefined}
+                onChange={handleProvinceChange}
+                options={provinces.map(p => ({ label: p, value: p }))}
+              />
+            </Form.Item>
+          </Col>
+          <Col span={16}>
+            <Form.Item
+              label="城市"
+              name="birthPlace"
+              rules={[{ required: true, message: '请选择出生城市' }]}
+              extra={input.longitude && input.latitude ? `已选择：${input.longitude.toFixed(4)}°E, ${input.latitude.toFixed(4)}°N` : '选择省份和城市后将自动获取经纬度'}
+            >
+              <Select
+                placeholder={selectedProvince ? '请选择城市' : '请先选择省份'}
+                loading={cityLoading}
+                disabled={!selectedProvince}
+                value={input.birthPlace || undefined}
+                onChange={handleCityChange}
+                options={cities.map(c => ({
+                  label: (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span>{c.name}</span>
+                      <Tag color="blue" style={{ marginLeft: 8, fontSize: 10 }}>{c.longitude.toFixed(2)}°E, {c.latitude.toFixed(2)}°N</Tag>
+                    </div>
+                  ),
+                  value: c.name
+                }))}
+                showSearch
+                optionFilterProp="label"
+              />
             </Form.Item>
           </Col>
         </Row>

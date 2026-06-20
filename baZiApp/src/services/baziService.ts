@@ -5,7 +5,7 @@ import { mockPaiPan } from '@/mock/data';
 const USE_MOCK = false; // 改为false，调用真实后端API
 
 // 实际后端API地址（将来替换）
-const API_BASE_URL = 'http://localhost:8000/api';
+const API_BASE_URL = 'http://localhost:8001/api';
 
 /**
  * 转换后端响应格式为前端期望格式
@@ -191,6 +191,59 @@ export async function paiPan(input: PaiPanInput): Promise<ApiResponse<PaiPanResu
       error: error instanceof Error ? error.message : '未知错误',
       message: '排盘失败，请稍后重试'
     };
+  }
+}
+
+/**
+ * 获取中国所有省份列表
+ */
+export async function getProvinces(): Promise<string[]> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/geo/provinces`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    const result = await response.json();
+    if (result.success && Array.isArray(result.data)) {
+      return result.data.map((p: { name: string }) => p.name);
+    }
+    return [];
+  } catch (error) {
+    console.error('获取省份列表失败:', error);
+    return [];
+  }
+}
+
+/**
+ * 根据省份获取城市列表
+ */
+export async function getCitiesByProvince(province: string): Promise<Array<{
+  id: number;
+  name: string;
+  province: string;
+  longitude: number;
+  latitude: number;
+}>> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/geo/cities-by-province`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ province })
+    });
+    const result = await response.json();
+    if (result.success && Array.isArray(result.data)) {
+      return result.data.map((c: any) => ({
+        id: c.id,
+        name: c.name,
+        province: c.province,
+        longitude: c.longitude,
+        latitude: c.latitude
+      }));
+    }
+    return [];
+  } catch (error) {
+    console.error('获取城市列表失败:', error);
+    return [];
   }
 }
 
